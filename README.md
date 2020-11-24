@@ -3,10 +3,11 @@
     A Swing-based front-end for our team project for CS-3200.
 </p>
 
-<h4>Authors</h4>
-<p align="center">Ethan Delany</p>
-<p align="center">Dayna Larm</p>
-<p align="center">Carson Butler</p>
+<!-- AUTHORS -->
+### Authors
+- Ethan Delany
+- Dayna Larm
+- Carson Butler
 
 
 <!-- GETTING STARTED -->
