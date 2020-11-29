@@ -8,15 +8,19 @@ import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
 import java.awt.Font;
 
@@ -35,6 +39,9 @@ public class HotelMan {
     private JTextField discount;
     private JTextField cat;
     public final SqlHandler sql;
+    private JButton hotelsButton, searchButton, ordersButton, insertButton;
+    private JLabel lblSelectedHotel;
+    private String selectedHotel = null;
 
     /**
      * Launch the application.
@@ -64,7 +71,7 @@ public class HotelMan {
      */
     private void initialize() {
         frame = new JFrame();
-        frame.setBounds(0, 0, 1600, 800);
+        frame.setBounds(0, 0, 1000, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().setLayout(null);
 
@@ -73,212 +80,170 @@ public class HotelMan {
         menuPanel.setBounds(0, 0, 150, 400);
         frame.getContentPane().add(menuPanel);
         menuPanel.setLayout(null);
-        JButton searchButton = new JButton("Search Books");
 
-        searchButton.setBounds(0, 20, 150, 40);
+        hotelsButton = new JButton("Manage Hotels");
+        hotelsButton.setBounds(0, 20, 150, 40);
+        menuPanel.add(hotelsButton);
+
+        searchButton = new JButton("Search Books");
+        searchButton.setBounds(0, 65, 150, 40);
         menuPanel.add(searchButton);
 
-        JButton ordersButton = new JButton("Search Orders");
-        ordersButton.setBounds(0, 65, 150, 40);
+        ordersButton = new JButton("Search Orders");
+        ordersButton.setBounds(0, 110, 150, 40);
         menuPanel.add(ordersButton);
 
-        JButton InsertCustomers = new JButton("Insert Books");
-        InsertCustomers.setBounds(0, 110, 150, 40);
-        menuPanel.add(InsertCustomers);
+        insertButton = new JButton("Insert Books");
+        insertButton.setBounds(0, 155, 150, 40);
+        menuPanel.add(insertButton);
+
         JPanel titlePanel = new JPanel();
         titlePanel.setBorder(null);
-        titlePanel.setBounds(144, 0, 710, 41);
+        titlePanel.setBounds(174, 0, 710, 25);
         frame.getContentPane().add(titlePanel);
 
-        JLabel lblWelcomeToMy = new JLabel("HotelMan v1.0");
-        lblWelcomeToMy.setFont(new Font("Tahoma", Font.BOLD, 18));
-        titlePanel.add(lblWelcomeToMy);
+        JLabel lblTitle = new JLabel("HotelMan v1.0");
+        lblTitle.setFont(new Font("Tahoma", Font.BOLD, 18));
+        titlePanel.add(lblTitle);
+
+        JPanel subTitlePanel = new JPanel();
+        subTitlePanel.setBorder(null);
+        subTitlePanel.setBounds(174, 30, 710, 41);
+        frame.getContentPane().add(subTitlePanel);
+
+        lblSelectedHotel = new JLabel("Current Hotel: NONE  ");
+        lblSelectedHotel.setFont(new Font("Tahoma", Font.ITALIC, 15));
+        subTitlePanel.add(lblSelectedHotel);
 
         final JPanel mainPanel = new JPanel();
         mainPanel.setBounds(150, 50, 650, 750);
         frame.getContentPane().add(mainPanel);
         mainPanel.setLayout(null);
 
-        JLabel lblPleaseChooseAn = new JLabel("Please choose an option from the menu");
-        lblPleaseChooseAn.setFont(new Font("Tahoma", Font.PLAIN, 15));
-        lblPleaseChooseAn.setBounds(192, 110, 351, 50);
-        mainPanel.add(lblPleaseChooseAn);
+        hotelFunction(mainPanel);
 
+        hotelsButton.addActionListener(e -> hotelFunction(mainPanel));
         searchButton.addActionListener(e -> searchFunction(mainPanel));
-        InsertCustomers.addActionListener(e -> insertFunction(mainPanel));
         ordersButton.addActionListener(e -> searchOrders(mainPanel));
+        insertButton.addActionListener(e -> insertFunction(mainPanel));
+    }
 
+    public void hotelFunction(JPanel mainPanel) {
+
+        mainPanel.removeAll();
+
+        hotelsButton.setEnabled(false);
+        searchButton.setEnabled(true);
+        ordersButton.setEnabled(true);
+        insertButton.setEnabled(true);
+
+        JLabel lblPleaseChooseAHotel = new JLabel("Please select a hotel");
+        lblPleaseChooseAHotel.setBounds(288, 47, 200, 50);
+        mainPanel.add(lblPleaseChooseAHotel);
+
+        DefaultListModel<String> listOfHotels = new DefaultListModel<>();
+        listOfHotels.addElement("Hampton Inn");
+        listOfHotels.addElement("Hilton Double Tree");
+        listOfHotels.addElement("Motel One");
+
+        JList<String> hotelSelectorList = new JList<>(listOfHotels);
+        hotelSelectorList.setBounds(288, 97, 200, 200);
+        hotelSelectorList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        hotelSelectorList.setLayoutOrientation(JList.VERTICAL);
+        hotelSelectorList.setVisibleRowCount(-1);
+        mainPanel.add(hotelSelectorList);
+
+        frame.repaint();
+
+        hotelSelectorList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                if (!(hotelSelectorList.getSelectedIndex() == -1)) {
+                    selectedHotel = hotelSelectorList.getSelectedValue();
+                    lblSelectedHotel.setText("Current Hotel: " + selectedHotel + "  ");
+                }
+            }
+        });
     }
 
     // Create the book search interface
+    public void searchFunction(JPanel mainPanel) {
 
-    public void searchFunction(final JPanel pan) {
+        mainPanel.removeAll();
 
-        pan.removeAll();
+        hotelsButton.setEnabled(true);
+        searchButton.setEnabled(false);
+        ordersButton.setEnabled(true);
+        insertButton.setEnabled(true);
+
         JLabel lblPleaseTypeA = new JLabel("Please type a category");
-        lblPleaseTypeA.setBounds(330, 20, 200, 50);
-        pan.add(lblPleaseTypeA);
+        lblPleaseTypeA.setBounds(288, 47, 200, 50);
+        mainPanel.add(lblPleaseTypeA);
 
         category = new JTextField();
-        category.setBounds(326, 70, 200, 50);
-        pan.add(category);
+        category.setBounds(288, 97, 200, 50);
+        mainPanel.add(category);
         category.setColumns(10);
 
         JButton lookup = new JButton("SUBMIT");
-        lookup.setBounds(326, 133, 200, 50);
-        pan.add(lookup);
+        lookup.setBounds(288, 160, 200, 50);
+        mainPanel.add(lookup);
+
         frame.repaint();
+
+
+
         final JTextPane displaypane = new JTextPane();
         displaypane.setBounds(50, 220, 800, 600);
 
         lookup.addActionListener(e -> {
             displaypane.setText(sqlSearchBooks(category.getText()));
-            pan.add(displaypane);
+            mainPanel.add(displaypane);
             frame.repaint();
         });
     }
 
-    // create the insert (admin page ) interface
-    public void insertFunction(JPanel mainPanel) {
+    public void searchOrders(JPanel mainPanel) {
 
         mainPanel.removeAll();
-        JLabel lblIsbn = new JLabel("ISBN");
-        lblIsbn.setBounds(120, 91, 100, 50);
-        mainPanel.add(lblIsbn);
 
-        JLabel lblBookTitle = new JLabel("Book Title");
-        lblBookTitle.setBounds(120, 133, 100, 50);
-        mainPanel.add(lblBookTitle);
+        hotelsButton.setEnabled(true);
+        searchButton.setEnabled(true);
+        ordersButton.setEnabled(false);
+        insertButton.setEnabled(true);
 
-        JLabel lblNewLabel = new JLabel("Publish Date");
-        lblNewLabel.setBounds(120, 173, 100, 50);
-        mainPanel.add(lblNewLabel);
-
-        JLabel lblNewLabel_1 = new JLabel("Publisher ID");
-        lblNewLabel_1.setBounds(120, 219, 100, 50);
-        mainPanel.add(lblNewLabel_1);
-
-        JLabel lblCost = new JLabel("Cost");
-        lblCost.setBounds(120, 258, 100, 50);
-        mainPanel.add(lblCost);
-
-        JLabel lblRetail = new JLabel("Discount");
-        lblRetail.setBounds(120, 351, 100, 50);
-        mainPanel.add(lblRetail);
-
-        JLabel lblCategory = new JLabel("Category");
-        lblCategory.setBounds(120, 396, 100, 50);
-        mainPanel.add(lblCategory);
-
-        ISBN = new JTextField();
-        ISBN.setBounds(236, 102, 192, 28);
-        mainPanel.add(ISBN);
-        ISBN.setColumns(10);
-
-        title = new JTextField();
-        title.setColumns(10);
-        title.setBounds(236, 144, 192, 28);
-        mainPanel.add(title);
-
-        pubDate = new JTextField();
-        pubDate.setColumns(10);
-        pubDate.setBounds(236, 184, 192, 28);
-        mainPanel.add(pubDate);
-
-        pubID = new JTextField();
-        pubID.setColumns(10);
-        pubID.setBounds(236, 230, 192, 28);
-        mainPanel.add(pubID);
-
-        Cost = new JTextField();
-        Cost.setColumns(10);
-        Cost.setBounds(236, 269, 192, 28);
-        mainPanel.add(Cost);
-
-        retail = new JTextField();
-        retail.setColumns(10);
-        retail.setBounds(236, 317, 192, 28);
-        mainPanel.add(retail);
-
-        discount = new JTextField();
-        discount.setColumns(10);
-        discount.setBounds(236, 362, 192, 28);
-        mainPanel.add(discount);
-
-        cat = new JTextField();
-        cat.setColumns(10);
-        cat.setBounds(236, 407, 192, 28);
-        mainPanel.add(cat);
-
-        JLabel lblDiscount = new JLabel("Retail");
-        lblDiscount.setBounds(120, 301, 100, 50);
-        mainPanel.add(lblDiscount);
-
-        JButton btnInsertData = new JButton("Insert Data");
-        btnInsertData.setBounds(236, 465, 192, 42);
-        mainPanel.add(btnInsertData);
-
-        frame.repaint();
-
-        btnInsertData.addActionListener(e -> {
-            boolean success = sqlInsertBook(ISBN.getText(), title.getText(), pubDate.getText(),
-                Integer.parseInt(pubID.getText()), Double.parseDouble(Cost.getText()),
-                Double.parseDouble(retail.getText()), Double.parseDouble(discount.getText()),
-                cat.getText());
-
-            if (success) {
-                JOptionPane.showMessageDialog(null, "Book inserted successfully.");
-                ISBN.setText("");
-                title.setText("");
-                pubDate.setText("");
-                pubID.setText("");
-                Cost.setText("");
-                retail.setText("");
-                discount.setText("");
-                cat.setText("");
-                frame.repaint();
-            } else {
-                JOptionPane.showMessageDialog(null, "Book insertion failed.");
-            }
-
-        });
-
-    }
-
-    public void searchOrders(final JPanel pan) {
-
-        pan.removeAll();
-        final JRadioButton cname = new JRadioButton("Customer's Last Name");
+        JRadioButton cname = new JRadioButton("Customer's Last Name");
         cname.setBounds(62, 47, 200, 50);
-        pan.add(cname);
+        mainPanel.add(cname);
 
-        final JRadioButton oid = new JRadioButton("Order ID");
+        JRadioButton oid = new JRadioButton("Order ID");
         oid.setBounds(62, 84, 200, 50);
-        pan.add(oid);
+        mainPanel.add(oid);
 
-        searchVlue = new JTextField();
-        searchVlue.setBounds(288, 97, 200, 50);
-        pan.add(searchVlue);
-        searchVlue.setColumns(10);
-
-        JButton search = new JButton("SUBMIT");
-        search.setBounds(288, 160, 200, 50);
-        pan.add(search);
-
-        final JRadioButton rdbtnState = new JRadioButton("State");
+        JRadioButton rdbtnState = new JRadioButton("State");
         rdbtnState.setBounds(62, 123, 200, 50);
-        pan.add(rdbtnState);
+        mainPanel.add(rdbtnState);
 
-        lblPleaseTypeSome = new JLabel("Please type some value");
-        lblPleaseTypeSome.setBounds(288, 47, 200, 50);
-        pan.add(lblPleaseTypeSome);
         ButtonGroup bg = new ButtonGroup();
-
         bg.add(cname);
         bg.add(oid);
         bg.add(rdbtnState);
 
+        lblPleaseTypeSome = new JLabel("Please type some value");
+        lblPleaseTypeSome.setBounds(288, 47, 200, 50);
+        mainPanel.add(lblPleaseTypeSome);
+
+        searchVlue = new JTextField();
+        searchVlue.setBounds(288, 97, 200, 50);
+        searchVlue.setColumns(10);
+        mainPanel.add(searchVlue);
+
+        JButton search = new JButton("SUBMIT");
+        search.setBounds(288, 160, 200, 50);
+        mainPanel.add(search);
+
         frame.repaint();
+
+
 
         final JTextPane displaypane = new JTextPane();
         displaypane.setBounds(50, 225, 1600, 800);
@@ -307,11 +272,126 @@ public class HotelMan {
                 JLabel hidden = new JLabel(column);
 
                 displaypane.setText(sqlSearchOrders(hidden.getText(), searchVlue.getText()));
-                pan.add(jsp);
+                mainPanel.add(jsp);
                 frame.repaint();
             }
         });
     }
+
+    // create the insert (admin page ) interface
+    public void insertFunction(JPanel mainPanel) {
+
+        mainPanel.removeAll();
+
+        hotelsButton.setEnabled(true);
+        searchButton.setEnabled(true);
+        ordersButton.setEnabled(true);
+        insertButton.setEnabled(false);
+
+        JLabel lblIsbn = new JLabel("ISBN");
+        lblIsbn.setBounds(160, 58, 100, 50);
+        mainPanel.add(lblIsbn);
+
+        JLabel lblBookTitle = new JLabel("Book Title");
+        lblBookTitle.setBounds(160, 98, 100, 50);
+        mainPanel.add(lblBookTitle);
+
+        JLabel lblNewLabel = new JLabel("Publish Date");
+        lblNewLabel.setBounds(160, 138, 100, 50);
+        mainPanel.add(lblNewLabel);
+
+        JLabel lblNewLabel_1 = new JLabel("Publisher ID");
+        lblNewLabel_1.setBounds(160, 178, 100, 50);
+        mainPanel.add(lblNewLabel_1);
+
+        JLabel lblCost = new JLabel("Cost");
+        lblCost.setBounds(160, 218, 100, 50);
+        mainPanel.add(lblCost);
+
+        JLabel lblDiscount = new JLabel("Retail");
+        lblDiscount.setBounds(160, 258, 100, 50);
+        mainPanel.add(lblDiscount);
+
+        JLabel lblRetail = new JLabel("Discount");
+        lblRetail.setBounds(160, 298, 100, 50);
+        mainPanel.add(lblRetail);
+
+        JLabel lblCategory = new JLabel("Category");
+        lblCategory.setBounds(160, 338, 100, 50);
+        mainPanel.add(lblCategory);
+
+        ISBN = new JTextField();
+        ISBN.setBounds(288, 70, 192, 28);
+        ISBN.setColumns(10);
+        mainPanel.add(ISBN);
+
+        title = new JTextField();
+        title.setBounds(288, 110, 192, 28);
+        title.setColumns(10);
+        mainPanel.add(title);
+
+        pubDate = new JTextField();
+        pubDate.setBounds(288, 150, 192, 28);
+        pubDate.setColumns(10);
+        mainPanel.add(pubDate);
+
+        pubID = new JTextField();
+        pubID.setBounds(288, 190, 192, 28);
+        pubID.setColumns(10);
+        mainPanel.add(pubID);
+
+        Cost = new JTextField();
+        Cost.setBounds(288, 230, 192, 28);
+        Cost.setColumns(10);
+        mainPanel.add(Cost);
+
+        retail = new JTextField();
+        retail.setBounds(288, 270, 192, 28);
+        retail.setColumns(10);
+        mainPanel.add(retail);
+
+        discount = new JTextField();
+        discount.setBounds(288, 310, 192, 28);
+        discount.setColumns(10);
+        mainPanel.add(discount);
+
+        cat = new JTextField();
+        cat.setBounds(288, 350, 192, 28);
+        cat.setColumns(10);
+        mainPanel.add(cat);
+
+        JButton btnInsertData = new JButton("Insert Data");
+        btnInsertData.setBounds(288, 390, 192, 42);
+        mainPanel.add(btnInsertData);
+
+        frame.repaint();
+
+
+
+        btnInsertData.addActionListener(e -> {
+            boolean success = sqlInsertBook(ISBN.getText(), title.getText(), pubDate.getText(),
+                Integer.parseInt(pubID.getText()), Double.parseDouble(Cost.getText()),
+                Double.parseDouble(retail.getText()), Double.parseDouble(discount.getText()),
+                cat.getText());
+
+            if (success) {
+                JOptionPane.showMessageDialog(null, "Book inserted successfully.");
+                ISBN.setText("");
+                title.setText("");
+                pubDate.setText("");
+                pubID.setText("");
+                Cost.setText("");
+                retail.setText("");
+                discount.setText("");
+                cat.setText("");
+                frame.repaint();
+            } else {
+                JOptionPane.showMessageDialog(null, "Book insertion failed.");
+            }
+        });
+    }
+
+
 
 
     public String sqlSearchBooks(String search) {

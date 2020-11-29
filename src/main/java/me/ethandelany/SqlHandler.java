@@ -45,7 +45,8 @@ public class SqlHandler {
                         username, password);
                 stmt = con.createStatement();
                 System.out.println("SQL Connected!");
-                setup();
+                setupTables();
+                insertData();
             } catch (SQLException e) {
                 System.out.println(e.toString());
                 System.out.println("SQL Connection Failed.");
@@ -54,83 +55,144 @@ public class SqlHandler {
         executor.execute(runnable);
     }
 
-    public void setup() {
-        // TODO: Get the actual SQL from Part 3 of the Team Project
-        /*String query;
+    /**
+     * Sets up all the tables required in the database.
+     */
+    public void setupTables() {
+        String query;
 
-        // Test table
-        query = "SELECT `UUID` FROM `BL_PLAYER` LIMIT 1";
+        query = "CREATE TABLE IF NOT EXISTS STAFF ("
+            + "StaffID INT PRIMARY KEY AUTO_INCREMENT,"
+            + "FirstName NVARCHAR(50),"
+            + "LastName NVARCHAR(50),"
+            + "PhoneNumber CHAR(10),"
+            + "Email NVARCHAR(100),"
+            + "StartDate DATE,"
+            + "EmployeeType NVARCHAR(100)"
+            + ");";
 
-        try {
-            stmt.executeQuery(query);
-        } catch (SQLException e) {
-            // If it doesn't exist, create the table
-            query = "CREATE TABLE IF NOT EXISTS `BL_PLAYER` ("
-                + "`UUID` VARCHAR(36) PRIMARY KEY,"
-                + "`TrailToggle` BOOL DEFAULT false,"
-                + "`Trail` NVARCHAR(30),"
-                + "`RoadBoostToggle` BOOL DEFAULT false"
-                + ")";
-            System.out.println("Creating Player table.");
-            executeUpdate(query);
-        }
+        executeUpdate(query);
 
-        query = "SELECT `UUID` FROM `BL_HOME` LIMIT 1";
+        query = "CREATE TABLE IF NOT EXISTS HOTEL ("
+            + "HotelID INT PRIMARY KEY AUTO_INCREMENT,"
+            + "Name NVARCHAR(50),"
+            + "Street NVARCHAR(100),"
+            + "City NVARCHAR(50),"
+            + "State VARCHAR(2),"
+            + "ZipCode VARCHAR(5),"
+            + "NumberOfRooms INT NOT NULL DEFAULT 0,"
+            + "HotelManagerID INT,"
+            + "CONSTRAINT hotel_manager_fk FOREIGN KEY (HotelManagerID) REFERENCES STAFF(StaffID)"
+            + ");";
 
-        try {
-            stmt.executeQuery(query);
-        } catch (SQLException e) {
-            query = "CREATE TABLE IF NOT EXISTS `BL_HOME` ("
-                + "`UUID` VARCHAR(36),"
-                + "`Home` NVARCHAR(30),"
-                + "`X` DOUBLE,"
-                + "`Y` DOUBLE,"
-                + "`Z` DOUBLE,"
-                + "`World` NVARCHAR(30),"
-                + "`Yaw` FLOAT,"
-                + "`Pitch` FLOAT,"
-                + "PRIMARY KEY (UUID,Home),"
-                + "FOREIGN KEY (UUID) REFERENCES BL_PLAYER (UUID)"
-                + ")";
-            Main.doBukkitLog(ChatColor.LIGHT_PURPLE + "Creating Home table.");
-            executeUpdate(query);
-        }
+        executeUpdate(query);
 
-        query = "SELECT `ZoneID` FROM `BL_ZONE` LIMIT 1";
+        query = "CREATE TABLE IF NOT EXISTS AMENITY ("
+            + "AmenityID INT PRIMARY KEY AUTO_INCREMENT,"
+            + "AmenityName NVARCHAR(100)"
+            + ");";
 
-        try {
-            stmt.executeQuery(query);
-        } catch (SQLException e) {
-            query = "CREATE TABLE IF NOT EXISTS `BL_ZONE` ("
-                + "`ZoneID` INT PRIMARY KEY AUTO_INCREMENT,"
-                + "`AX` DOUBLE,"
-                + "`AY` DOUBLE,"
-                + "`AZ` DOUBLE,"
-                + "`BX` DOUBLE,"
-                + "`BY` DOUBLE,"
-                + "`BZ` DOUBLE,"
-                + "`World` NVARCHAR(30),"
-                + "`OwnerUUID` VARCHAR(36),"
-                + "FOREIGN KEY (OwnerUUID) REFERENCES BL_PLAYER (UUID)"
-                + ")";
-            Main.doBukkitLog(ChatColor.LIGHT_PURPLE + "Creating Zone table.");
-            executeUpdate(query);
-        }
+        executeUpdate(query);
 
-        query = "SELECT `ZoneID` FROM `BL_ZONE_MEMBER` LIMIT 1";
+        query = "CREATE TABLE IF NOT EXISTS HOTEL_AMENITY ("
+            + "HotelID INT,"
+            + "AmenityID INT,"
+            + "PRIMARY KEY (HotelID,AmenityID),"
+            + "CONSTRAINT hotelamenity_hotelid_fk FOREIGN KEY (HotelID) REFERENCES HOTEL(HotelID),"
+            + "CONSTRAINT hotelamenity_amenityid_fk FOREIGN KEY (AmenityID) REFERENCES AMENITY(AmenityID)"
+            + ");";
 
-        try {
-            stmt.executeQuery(query);
-        } catch (SQLException e) {
-            query = "CREATE TABLE IF NOT EXISTS `BL_ZONE_MEMBER` ("
-                + "`ZoneID` INT,"
-                + "`MemberUUID` VARCHAR(36),"
-                + "PRIMARY KEY (ZoneID, MemberUUID),"
-                + "FOREIGN KEY (MemberUUID) REFERENCES BL_PLAYER (UUID)"
-                + ")";
-            Main.doBukkitLog(ChatColor.LIGHT_PURPLE + "Creating Zone Members table.");
-            executeUpdate(query);
-        }*/
+        executeUpdate(query);
+
+        query = "CREATE TABLE IF NOT EXISTS SHIFT ("
+            + "ShiftID INT PRIMARY KEY AUTO_INCREMENT,"
+            + "HotelID INT NOT NULL,"
+            + "StaffID INT NOT NULL,"
+            + "ShiftPosition NVARCHAR(100),"
+            + "ShiftStart DATETIME,"
+            + "ShiftEnd DATETIME,"
+            + "CONSTRAINT shift_hotelid_fk FOREIGN KEY (HotelID) REFERENCES HOTEL(HotelID),"
+            + "CONSTRAINT shift_staffid_fk FOREIGN KEY (StaffID) REFERENCES STAFF(StaffID)"
+            + ");";
+
+        executeUpdate(query);
+
+        query = "CREATE TABLE IF NOT EXISTS ROOM ("
+            + "RoomID INT PRIMARY KEY AUTO_INCREMENT,"
+            + "HotelID INT NOT NULL,"
+            + "RoomNumber INT NOT NULL,"
+            + "RoomType NVARCHAR(50),"
+            + "RoomPrice DOUBLE,"
+            + "CONSTRAINT room_hotelid_fk FOREIGN KEY (HotelID) REFERENCES HOTEL(HotelID)"
+            + ");";
+
+        executeUpdate(query);
+
+        query = "CREATE TABLE IF NOT EXISTS FEATURE ("
+            + "FeatureID INT PRIMARY KEY AUTO_INCREMENT,"
+            + "FeatureName NVARCHAR(100)"
+            + ");";
+
+        executeUpdate(query);
+
+        query = "CREATE TABLE IF NOT EXISTS ROOM_FEATURE ("
+            + "RoomID INT,"
+            + "FeatureID INT,"
+            + "PRIMARY KEY (RoomID, FeatureID),"
+            + "CONSTRAINT roomfeature_roomid_fk FOREIGN KEY (RoomID) REFERENCES ROOM(RoomID),"
+            + "CONSTRAINT roomfeature_featureid_fk FOREIGN KEY (FeatureID) REFERENCES FEATURE(FeatureID)"
+            + ");";
+
+        executeUpdate(query);
+
+        query = "CREATE TABLE IF NOT EXISTS CUSTOMER ("
+            + "CustomerID INT PRIMARY KEY AUTO_INCREMENT,"
+            + "FirstName NVARCHAR(50),"
+            + "LastName NVARCHAR(50),"
+            + "DateOfBirth DATE,"
+            + "Street NVARCHAR(100),"
+            + "City NVARCHAR(50),"
+            + "State VARCHAR(2),"
+            + "ZipCode VARCHAR(5),"
+            + "PhoneNumber CHAR(10),"
+            + "Email NVARCHAR(100)"
+            + ");";
+
+        executeUpdate(query);
+
+        query = "CREATE TABLE IF NOT EXISTS RESERVATION ("
+            + "ReservationID INT PRIMARY KEY AUTO_INCREMENT,"
+            + "CustomerID INT NOT NULL,"
+            + "CheckIn DATETIME,"
+            + "CheckOut DATETIME,"
+            + "CONSTRAINT reservation_customerid_fk FOREIGN KEY (CustomerID) REFERENCES CUSTOMER(CustomerID)"
+            + ");";
+
+        executeUpdate(query);
+
+        query = "CREATE TABLE IF NOT EXISTS ROOM_RESERVATION ("
+            + "RoomID INT,"
+            + "ReservationID INT,"
+            + "PRIMARY KEY (RoomID, ReservationID),"
+            + "CONSTRAINT roomreservation_roomid_fk FOREIGN KEY (RoomID) REFERENCES ROOM(RoomID),"
+            + "CONSTRAINT roomreservation_reservationid_fk FOREIGN KEY (ReservationID) REFERENCES RESERVATION(ReservationID)"
+            + ");";
+
+        executeUpdate(query);
+
+        query = "CREATE TABLE IF NOT EXISTS PAYMENT ("
+            + "PaymentID INT PRIMARY KEY AUTO_INCREMENT,"
+            + "ReservationID INT NOT NULL,"
+            + "PaymentType NVARCHAR(100),"
+            + "PaymentInfo NVARCHAR(200),"
+            + "CONSTRAINT payment_reservationid_fk FOREIGN KEY (ReservationID) REFERENCES RESERVATION(ReservationID)"
+            + ");";
+
+        executeUpdate(query);
+    }
+
+    public void insertData() {
+        // TODO: Insert all the dummy data right here.
     }
 
     /**
