@@ -47,3 +47,8 @@ buildNumber.properties
 .idea/misc.xml
 .idea/sqldialects.xml
 .idea/uiDesigner.xml
+/HotelMan.iml
+.idea/dataSources/
+.idea/libraries/
+.idea/modules.xml
+.idea/vcs.xml
