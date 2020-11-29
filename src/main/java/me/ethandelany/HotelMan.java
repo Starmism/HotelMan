@@ -3,10 +3,12 @@ package me.ethandelany;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
+import java.awt.Transparency;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 
+import java.sql.SQLException;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -17,6 +19,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ListModel;
@@ -41,7 +44,8 @@ public class HotelMan {
     public final SqlHandler sql;
     private JButton hotelsButton, searchButton, ordersButton, insertButton;
     private JLabel lblSelectedHotel;
-    private String selectedHotel = null;
+    private String selectedHotel = "";
+    private String selectedHotelManager = "Hotel Manager:\nNONE SELECTED";
 
     /**
      * Launch the application.
@@ -61,9 +65,9 @@ public class HotelMan {
      * Create the application.
      */
     public HotelMan(String host, String database, String username, String password) {
-        initialize();
-
         sql = new SqlHandler(host, database, username, password);
+
+        initialize();
     }
 
     /**
@@ -142,24 +146,79 @@ public class HotelMan {
         mainPanel.add(lblPleaseChooseAHotel);
 
         DefaultListModel<String> listOfHotels = new DefaultListModel<>();
-        listOfHotels.addElement("Hampton Inn");
-        listOfHotels.addElement("Hilton Double Tree");
-        listOfHotels.addElement("Motel One");
+        ResultSet rs = sql.executeQuery("SELECT * FROM `HOTEL`;");
+
+        try {
+            while (rs.next())
+                listOfHotels.addElement(
+                    rs.getNString("Name") + " @ "
+                    + rs.getNString("Street") + ", "
+                    + rs.getNString("City") + ", "
+                    + rs.getString("State") + " "
+                    + rs.getString("ZipCode")
+                );
+        } catch (SQLException e) {
+            System.out.println("[SQL ERROR] Error getting list of hotels.");
+            e.printStackTrace();
+        }
 
         JList<String> hotelSelectorList = new JList<>(listOfHotels);
-        hotelSelectorList.setBounds(288, 97, 200, 200);
+        // This needs to be bigger but I don't know why it won't get bigger!!!
+        hotelSelectorList.setBounds(288, 97, 500, 200);
         hotelSelectorList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         hotelSelectorList.setLayoutOrientation(JList.VERTICAL);
         hotelSelectorList.setVisibleRowCount(-1);
+        hotelSelectorList.setSelectedValue(selectedHotel, false);
         mainPanel.add(hotelSelectorList);
 
+        JTextArea areaHotelManager = new JTextArea(selectedHotelManager);
+        areaHotelManager.setBounds(20, 97, 240, 150);
+        areaHotelManager.setOpaque(false);
+        areaHotelManager.setEditable(false);
+        areaHotelManager.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        mainPanel.add(areaHotelManager);
+
         frame.repaint();
+
+
 
         hotelSelectorList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 if (!(hotelSelectorList.getSelectedIndex() == -1)) {
+                    // Sets the hotel to the selected one
                     selectedHotel = hotelSelectorList.getSelectedValue();
                     lblSelectedHotel.setText("Current Hotel: " + selectedHotel + "  ");
+
+                    // Get the Hotel Manager information
+                    try {
+                        // Set the ResultSet row to the correct one
+                        rs.absolute(hotelSelectorList.getSelectedIndex() + 1);
+
+                        // Get the row corresponding to the hotel manager
+                        ResultSet rs2 = sql.executeQuery("SELECT * FROM `STAFF` WHERE `STAFFID` = " + rs.getInt("HotelManagerID"));
+
+                        // If they exist
+                        if (rs2.next()) {
+                            // Get the phone number, then prettify it
+                            String phoneNum = rs2.getString("PhoneNumber");
+                            phoneNum = "(" + phoneNum.substring(0,3) + ") " + phoneNum.substring(3, 6) + "-" + phoneNum.substring(6,10);
+
+                            // Set the current Hotel Manager string to the full format
+                            selectedHotelManager = "Hotel Manager:"
+                                + "\nName: " + rs2.getNString("FirstName") + " " + rs2.getNString("LastName")
+                                + "\nEmail: " + rs2.getNString("Email")
+                                + "\nPhone Number: " + phoneNum;
+
+                            // Update the actual text in the panel to the new string
+                            areaHotelManager.setText(selectedHotelManager);
+
+                        } else {
+                            areaHotelManager.setText("Hotel Manager:\nNONE FOUND");
+                        }
+                    } catch (SQLException ex) {
+                        System.out.println("[SQL ERROR] Couldn't get Manager info.");
+                        ex.printStackTrace();
+                    }
                 }
             }
         });
@@ -189,7 +248,6 @@ public class HotelMan {
         mainPanel.add(lookup);
 
         frame.repaint();
-
 
 
         final JTextPane displaypane = new JTextPane();
@@ -247,15 +305,17 @@ public class HotelMan {
 
         final JTextPane displaypane = new JTextPane();
         displaypane.setBounds(50, 225, 1600, 800);
-        final JScrollPane jsp = new JScrollPane(displaypane);
 
+        final JScrollPane jsp = new JScrollPane(displaypane);
         jsp.setBounds(50, 225, 1600, 800);
 
         search.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+
                 cname.addActionListener(this);
                 oid.addActionListener(this);
                 rdbtnState.addActionListener(this);
+
                 String column = "";
 
                 if (cname.isSelected()) {
@@ -270,9 +330,9 @@ public class HotelMan {
                 }
 
                 JLabel hidden = new JLabel(column);
-
                 displaypane.setText(sqlSearchOrders(hidden.getText(), searchVlue.getText()));
                 mainPanel.add(jsp);
+
                 frame.repaint();
             }
         });

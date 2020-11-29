@@ -575,7 +575,7 @@ public class SqlHandler {
         try {
             System.out.println("[SQL] " + query);
             return stmt.executeQuery(query);
-        } catch (SQLException e) {
+        } catch (SQLException | NullPointerException e) {
             e.printStackTrace();
         }
         return null;
@@ -592,7 +592,7 @@ public class SqlHandler {
             System.out.println("[SQL] " + query);
             stmt.executeUpdate(query);
             return true;
-        } catch (SQLException e) {
+        } catch (SQLException | NullPointerException e) {
             e.printStackTrace();
         }
         return false;
