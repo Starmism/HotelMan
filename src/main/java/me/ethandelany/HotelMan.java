@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.NumberFormat;
 import java.util.Date;
 import java.sql.ResultSet;
 
@@ -25,11 +26,12 @@ import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
 import java.awt.Font;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class HotelMan {
 
     private JFrame frame;
-    private JTextField category;
     private JTextField searchVlue;
     private JLabel lblPleaseTypeSome;
     private JTextField ISBN;
@@ -44,11 +46,10 @@ public class HotelMan {
     private JButton hotelsButton, roomSearchButton, ordersButton, insertButton;
     private JLabel lblSelectedHotel;
     private String selectedHotel = "";
-    private String selectedHotelManager = "Hotel Manager:\nNONE SELECTED";
+    private String selectedHotelManager = "";
     private int selectedHotelID;
     private String reservedFilterGlobal = "All";
     private String roomTypeSelectorGlobal = "All Room Types";
-    private Date date;
 
     /**
      * Launch the application.
@@ -109,13 +110,13 @@ public class HotelMan {
         titlePanel.setBounds(174, 0, 710, 25);
         frame.getContentPane().add(titlePanel);
 
-        JLabel lblTitle = new JLabel("HotelMan v1.0");
+        JLabel lblTitle = new JLabel("HotelMan v1.1");
         lblTitle.setFont(new Font("Tahoma", Font.BOLD, 18));
         titlePanel.add(lblTitle);
 
         JPanel subTitlePanel = new JPanel();
         subTitlePanel.setBorder(null);
-        subTitlePanel.setBounds(174, 30, 710, 41);
+        subTitlePanel.setBounds(174, 25, 710, 41);
         frame.getContentPane().add(subTitlePanel);
 
         lblSelectedHotel = new JLabel("Current Hotel: NONE  ");
@@ -123,7 +124,7 @@ public class HotelMan {
         subTitlePanel.add(lblSelectedHotel);
 
         final JPanel mainPanel = new JPanel();
-        mainPanel.setBounds(150, 50, 650, 750);
+        mainPanel.setBounds(150, 50, 750, 750);
         frame.getContentPane().add(mainPanel);
         mainPanel.setLayout(null);
 
@@ -166,16 +167,20 @@ public class HotelMan {
         }
 
         JList<String> hotelSelectorList = new JList<>(listOfHotels);
-        // This needs to be bigger but I don't know why it won't get bigger!!!
-        hotelSelectorList.setBounds(288, 97, 500, 200);
+        hotelSelectorList.setBounds(288, 97, 450, 300);
         hotelSelectorList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         hotelSelectorList.setLayoutOrientation(JList.VERTICAL);
         hotelSelectorList.setVisibleRowCount(-1);
         hotelSelectorList.setSelectedValue(selectedHotel, false);
         mainPanel.add(hotelSelectorList);
 
+        JLabel lblHotelManager = new JLabel("Hotel Manager");
+        lblHotelManager.setFont(new Font("Tahoma", Font.BOLD, 16));
+        lblHotelManager.setBounds(30, 67, 200, 50);
+        mainPanel.add(lblHotelManager);
+
         JTextArea areaHotelManager = new JTextArea(selectedHotelManager);
-        areaHotelManager.setBounds(20, 97, 240, 150);
+        areaHotelManager.setBounds(30, 97, 240, 150);
         areaHotelManager.setOpaque(false);
         areaHotelManager.setEditable(false);
         areaHotelManager.setFont(new Font("Tahoma", Font.PLAIN, 13));
@@ -210,8 +215,8 @@ public class HotelMan {
                             phoneNum = "(" + phoneNum.substring(0,3) + ") " + phoneNum.substring(3, 6) + "-" + phoneNum.substring(6,10);
 
                             // Set the current Hotel Manager string to the full format
-                            selectedHotelManager = "Hotel Manager:"
-                                + "\nName: " + rs2.getNString("FirstName") + " " + rs2.getNString("LastName")
+                            selectedHotelManager =
+                                "\nName: " + rs2.getNString("FirstName") + " " + rs2.getNString("LastName")
                                 + "\nEmail: " + rs2.getNString("Email")
                                 + "\nPhone Number: " + phoneNum;
 
@@ -219,7 +224,7 @@ public class HotelMan {
                             areaHotelManager.setText(selectedHotelManager);
 
                         } else {
-                            areaHotelManager.setText("Hotel Manager:\nNONE FOUND");
+                            areaHotelManager.setText("None");
                         }
                     } catch (SQLException ex) {
                         System.out.println("[SQL ERROR] Couldn't get Manager info.");
@@ -230,7 +235,10 @@ public class HotelMan {
         });
     }
 
-    // Create the room search interface
+
+
+    // START OF SEARCH ROOMS PAGE
+    // ||||||||||||||||||||||||||
     public void roomSearchFunction(JPanel mainPanel) {
 
         mainPanel.removeAll();
@@ -247,38 +255,30 @@ public class HotelMan {
         DefaultListModel<String> listOfRooms = new DefaultListModel<>();
         getListOfRooms(listOfRooms, mainPanel);
 
+
+        JLabel lblFilters = new JLabel("Filters");
+        lblFilters.setFont(new Font("Tahoma", Font.BOLD, 16));
+        lblFilters.setBounds(60, 47, 200, 50);
+        mainPanel.add(lblFilters);
+
+        // Radial buttons for reservation status
         JRadioButton allReservations = new JRadioButton("All Reservation Status");
-        allReservations.setBounds(62, 47, 200, 50);
+        allReservations.setBounds(62, 87, 200, 50);
         allReservations.setSelected(true);
         mainPanel.add(allReservations);
 
         JRadioButton onlyReserved = new JRadioButton("Only Reserved Rooms");
-        onlyReserved.setBounds(62, 87, 200, 50);
+        onlyReserved.setBounds(62, 127, 200, 50);
         mainPanel.add(onlyReserved);
 
         JRadioButton onlyAvailable = new JRadioButton("Only Available Rooms");
-        onlyAvailable.setBounds(62, 127, 200, 50);
+        onlyAvailable.setBounds(62, 167, 200, 50);
         mainPanel.add(onlyAvailable);
 
         ButtonGroup reservationsFilter = new ButtonGroup();
         reservationsFilter.add(allReservations);
         reservationsFilter.add(onlyReserved);
         reservationsFilter.add(onlyAvailable);
-
-        String[] roomTypeOptions = {"All Room Types", "Single-Twin", "Single-Queen", "Single-King", "Double-Twin", "Double-Queen"};
-
-        JComboBox<String> roomTypeSelector = new JComboBox<>(roomTypeOptions);
-        roomTypeSelector.setSelectedIndex(0);
-        roomTypeSelector.setBounds(62, 187, 200, 50);
-        mainPanel.add(roomTypeSelector);
-
-        roomTypeSelector.addActionListener(e -> {
-            roomTypeSelectorGlobal = (String) roomTypeSelector.getSelectedItem();
-            getListOfRooms(listOfRooms, mainPanel);
-        });
-
-        frame.repaint();
-
 
         allReservations.addActionListener(e -> {
             reservedFilterGlobal = "All";
@@ -295,12 +295,29 @@ public class HotelMan {
             getListOfRooms(listOfRooms, mainPanel);
             frame.repaint();
         });
+
+
+        // Room Type Dropdown Selector
+        String[] roomTypeOptions = {"All Room Types", "Single-Twin", "Single-Queen", "Single-King", "Double-Twin", "Double-Queen"};
+
+        JComboBox<String> roomTypeSelector = new JComboBox<>(roomTypeOptions);
+        roomTypeSelector.setSelectedIndex(0);
+        roomTypeSelector.setBounds(62, 227, 200, 50);
+        mainPanel.add(roomTypeSelector);
+
+        roomTypeSelector.addActionListener(e -> {
+            roomTypeSelectorGlobal = (String) roomTypeSelector.getSelectedItem();
+            getListOfRooms(listOfRooms, mainPanel);
+        });
+
+
+
+        frame.repaint();
     }
 
     private void getListOfRooms(DefaultListModel<String> listOfRooms, JPanel mainPanel) {
         ResultSet rs = sql.executeQuery("SELECT * FROM `ROOM` WHERE `HotelID` = " + selectedHotelID + " ORDER BY `RoomNumber`");
-        ResultSet rs2;
-        ResultSet rs3;
+        ResultSet rs2, rs3;
         String reserved, roomType = "All";
         int roomNumber, roomID;
         listOfRooms.clear();
@@ -309,7 +326,7 @@ public class HotelMan {
             while (rs.next()) {
                 roomNumber = rs.getInt("RoomNumber");
                 roomID = rs.getInt("RoomID");
-                date = new Date();
+                Date date = new Date();
                 reserved = "<font color='green'>AVAILABLE</font>";
 
                 // Check if the room is currently reserved
@@ -356,11 +373,132 @@ public class HotelMan {
         }
 
         JList<String> roomSelectorList = new JList<>(listOfRooms);
-        roomSelectorList.setBounds(288, 97, 500, 300);
+        roomSelectorList.setBounds(288, 97, 400, 300);
         roomSelectorList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         roomSelectorList.setLayoutOrientation(JList.VERTICAL);
         roomSelectorList.setVisibleRowCount(-1);
         mainPanel.add(roomSelectorList);
+
+
+        // Subsection of room selection
+        JLabel lblRoomTitle = new JLabel();
+        lblRoomTitle.setFont(new Font("Tahoma", Font.BOLD, 16));
+        lblRoomTitle.setBounds(60, 412, 200, 50);
+        lblRoomTitle.setVisible(false);
+        mainPanel.add(lblRoomTitle);
+
+        JTextArea areaRoomInfo = new JTextArea();
+        areaRoomInfo.setBounds(60, 457, 250, 200);
+        areaRoomInfo.setOpaque(false);
+        areaRoomInfo.setEditable(false);
+        areaRoomInfo.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        areaRoomInfo.setVisible(false);
+        mainPanel.add(areaRoomInfo);
+
+        JTextArea areaFeatures = new JTextArea();
+        areaFeatures.setBounds(131, 489, 150, 200);
+        areaFeatures.setOpaque(false);
+        areaFeatures.setEditable(false);
+        areaFeatures.setFont(new Font("Tahoma", Font.PLAIN, 13));
+        areaFeatures.setVisible(false);
+        mainPanel.add(areaFeatures);
+
+        JLabel lblReservationList = new JLabel("Reservation List");
+        lblReservationList.setBounds(288, 407, 200, 50);
+        lblReservationList.setVisible(false);
+        mainPanel.add(lblReservationList);
+
+        JList<String> reservationSelectorList = new JList<>();
+        reservationSelectorList.setBounds(288, 457, 400, 200);
+        reservationSelectorList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        reservationSelectorList.setLayoutOrientation(JList.VERTICAL);
+        reservationSelectorList.setVisibleRowCount(-1);
+        reservationSelectorList.setVisible(false);
+        mainPanel.add(reservationSelectorList);
+
+
+
+        roomSelectorList.addListSelectionListener(e -> {
+            int curRoomID;
+            int curRoomNumber = Integer.parseInt(roomSelectorList.getSelectedValue().substring(6, 9));
+            String curRoomType = "", currencyString;
+            double curRoomPrice = 0.0;
+            ResultSet rs4, rs5, rs6, rs7;
+            DefaultListModel<String> listOfReservations = new DefaultListModel<>();
+            StringBuilder curRoomFeatures = null;
+
+            try {
+                rs4 = sql.executeQuery("SELECT * FROM `ROOM` WHERE `RoomNumber` = " + curRoomNumber + " AND `HotelID` = " + selectedHotelID);
+
+                if (rs4.next()) {
+                    curRoomID = rs4.getInt("RoomID");
+                    curRoomType = rs4.getNString("RoomType");
+                    curRoomPrice = rs4.getDouble("RoomPrice");
+
+                    rs5 = sql.executeQuery("SELECT r.ReservationID, r.CheckIn, r.CheckOut"
+                        + " FROM `ROOM_RESERVATION` rr"
+                        + " INNER JOIN RESERVATION R"
+                        + " ON rr.ReservationID = R.ReservationID"
+                        + " INNER JOIN room r2 on rr.RoomID = r2.RoomID"
+                        + " WHERE rr.`RoomID` = " + curRoomID
+                        + " AND `HotelID` = " + selectedHotelID
+                        + " ORDER BY r.CheckIn");
+
+                    while (rs5.next()) {
+                        listOfReservations.addElement("ID - " + rs5.getInt("ReservationID")
+                            + " > " + rs5.getDate("CheckIn").toString()
+                            + " > " + rs5.getDate("CheckOut").toString()
+                            + " - Checkout Time: "
+                            + rs5.getTime("CheckOut").toString().substring(0, 5));
+                    }
+
+                    rs6 = sql.executeQuery("SELECT * FROM `ROOM_FEATURE` WHERE `RoomID` = " + curRoomID);
+
+                    curRoomFeatures = new StringBuilder();
+                    while (rs6.next()) {
+                        rs7 = sql.executeQuery("SELECT * FROM `FEATURE` WHERE `FeatureID` = " + rs6.getInt("FeatureID"));
+                        if (rs7.next()) {
+                            if (rs6.getRow() != 1) {
+                                curRoomFeatures.append(",\n");
+                            }
+                            curRoomFeatures.append(rs7.getNString("FeatureName"));
+                        }
+                    }
+
+                    if (curRoomFeatures.length() == 0) {
+                        curRoomFeatures.append("None");
+                    }
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+
+            lblRoomTitle.setText("Room #" + curRoomNumber);
+            lblRoomTitle.setVisible(true);
+
+            // Prettify money number
+            currencyString = NumberFormat.getCurrencyInstance().format(curRoomPrice);
+            currencyString = currencyString.replaceAll("\\.00", "");
+
+            areaRoomInfo.setText("Type -> " + curRoomType
+                + "\nPrice -> " + currencyString
+                + "\nFeatures -> ");
+            areaRoomInfo.setVisible(true);
+
+            areaFeatures.setText(curRoomFeatures.toString());
+            areaFeatures.setVisible(true);
+
+            lblReservationList.setVisible(true);
+
+            reservationSelectorList.setModel(listOfReservations);
+            reservationSelectorList.setVisible(true);
+
+
+            frame.repaint();
+        });
+
+
+
     }
 
     private void satisfyRoomTypeCheck(DefaultListModel<String> listOfRooms, String reserved, String roomType, int roomNumber) {
@@ -368,7 +506,7 @@ public class HotelMan {
             case "All Room Types":
                 listOfRooms.addElement(
                     "<html>"
-                        + roomNumber + " -> "
+                        + roomNumber + " > "
                         + reserved
                         + " - "
                         + roomType
@@ -379,7 +517,7 @@ public class HotelMan {
                 if (roomType.equals("Single-Twin")) {
                     listOfRooms.addElement(
                         "<html>"
-                            + roomNumber + " -> "
+                            + roomNumber + " > "
                             + reserved
                             + " - "
                             + roomType
@@ -391,7 +529,7 @@ public class HotelMan {
                 if (roomType.equals("Single-Queen")) {
                     listOfRooms.addElement(
                         "<html>"
-                            + roomNumber + " -> "
+                            + roomNumber + " > "
                             + reserved
                             + " - "
                             + roomType
@@ -403,7 +541,7 @@ public class HotelMan {
                 if (roomType.equals("Single-King")) {
                     listOfRooms.addElement(
                         "<html>"
-                            + roomNumber + " -> "
+                            + roomNumber + " > "
                             + reserved
                             + " - "
                             + roomType
@@ -415,7 +553,7 @@ public class HotelMan {
                 if (roomType.equals("Double-Twin")) {
                     listOfRooms.addElement(
                         "<html>"
-                            + roomNumber + " -> "
+                            + roomNumber + " > "
                             + reserved
                             + " - "
                             + roomType
@@ -427,7 +565,7 @@ public class HotelMan {
                 if (roomType.equals("Double-Queen)")) {
                     listOfRooms.addElement(
                         "<html>"
-                            + roomNumber + " -> "
+                            + roomNumber + " > "
                             + reserved
                             + " - "
                             + roomType
@@ -437,6 +575,11 @@ public class HotelMan {
                 break;
         }
     }
+
+    // ||||||||||||||||||||||||
+    // END OF SEARCH ROOMS PAGE
+
+
 
     public void searchOrders(JPanel mainPanel) {
 
@@ -516,7 +659,7 @@ public class HotelMan {
         });
     }
 
-    // create the insert (admin page ) interface
+
     public void insertFunction(JPanel mainPanel) {
 
         mainPanel.removeAll();
@@ -632,7 +775,8 @@ public class HotelMan {
 
 
 
-    public String sqlSearchBooks(String search) {
+    // DEPRECATED
+    /*public String sqlSearchBooks(String search) {
         String query;
         ResultSet rs;
         int resultCount = 0;
@@ -640,7 +784,6 @@ public class HotelMan {
         if (search.equalsIgnoreCase("all")) {
             query = "SELECT b.ISBN, b.Title, b.Retail FROM BOOKS b";
         } else {
-            // TODO: Setup PreparedStatement to stop SQL Injections
             query = "SELECT b.ISBN, b.Title, b.Retail FROM BOOKS b WHERE `Category` = '" + search + "'";
         }
 
@@ -666,7 +809,7 @@ public class HotelMan {
 
         return results.toString();
 
-    }
+    }*/
 
     public String sqlSearchOrders(String col, String search) {
         String query;
