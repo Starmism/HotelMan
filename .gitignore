@@ -52,3 +52,5 @@ buildNumber.properties
 .idea/libraries/
 .idea/modules.xml
 .idea/vcs.xml
+/.idea/codeStyles/codeStyleConfig.xml
+/.idea/codeStyles/Project.xml
