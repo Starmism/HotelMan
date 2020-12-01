@@ -31,6 +31,8 @@ public class SearchRooms {
     private JLabel lblRoomTitle, lblReservationList;
     private JTextArea areaRoomInfo, areaRoomFeatures;
     private JList<String> reservationSelectorList;
+    private JScrollPane listScroller;
+    private JList<String> roomSelectorList;
 
 
     public SearchRooms(HotelMan hm) {
@@ -53,6 +55,9 @@ public class SearchRooms {
     public void roomSearchFunction() {
 
         mainPanel.removeAll();
+
+        reservedFilter = "Any";
+        roomTypeFilter = "All Room Types";
 
         hm.buttonSetter(1);
 
@@ -86,12 +91,12 @@ public class SearchRooms {
         reservationsFilter.add(onlyReserved);
         reservationsFilter.add(onlyAvailable);
 
-        JList<String> roomSelectorList = new JList<>(listOfRooms);
+        roomSelectorList = new JList<>(listOfRooms);
         roomSelectorList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         roomSelectorList.setLayoutOrientation(JList.VERTICAL);
         roomSelectorList.setVisibleRowCount(-1);
 
-        JScrollPane listScroller = new JScrollPane(roomSelectorList);
+        listScroller = new JScrollPane(roomSelectorList);
         listScroller.setBounds(288, 97, 400, 300);
         mainPanel.add(listScroller);
 
@@ -292,7 +297,7 @@ public class SearchRooms {
                 }
                 break;
             case "Double-Queen":
-                if (roomType.equals("Double-Queen)")) {
+                if (roomType.equals("Double-Queen")) {
                     listOfRooms.addElement(
                         "<html>"
                             + roomNumber + " > "
@@ -304,6 +309,7 @@ public class SearchRooms {
                 }
                 break;
         }
+        hm.repaintFrame();
     }
 
     private void displayRoomInfo(JList<String> roomSelectorList) {
