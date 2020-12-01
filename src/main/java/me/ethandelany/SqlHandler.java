@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import javax.xml.transform.Result;
 
 public class SqlHandler {
+    private HotelMan hm;
     private final String host, database, username, password;
     private Connection con;
     private Statement stmt;
@@ -49,8 +50,9 @@ public class SqlHandler {
                 setupTables();
                 insertData();
             } catch (SQLException e) {
-                System.out.println(e.toString());
-                System.out.println("SQL Connection Failed.");
+                System.out.println("[SQL] FAILED TO CONNECT.");
+                System.out.println("PROGRAM WILL NOT FUNCTION!!!!");
+                e.printStackTrace();
             }
         };
         executor.execute(runnable);
