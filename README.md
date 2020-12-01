@@ -15,18 +15,20 @@
 
 ### Installation
 
-1. Install and setup MySQL or MariaDB
-2. Clone the repo
+1. Install JDK 8+ (recommended 11)
+2. Install and setup MySQL or MariaDB
+3. Create a schema for HotelMan and (probably) a user with access to it
+4. Clone the repo
    ```sh
    git clone https://github.com/ethandelany/HotelMan.git
    ```
-3. Build the jar with Maven
+5. Build the jar with Maven
    ```sh
    mvn package
    ```
-4. Run the jar with your database credentials as command line arguments
+6. Run the jar with your database credentials as command line arguments
    ```sh
-   java -jar HotelMan-1.0-SNAPSHOT.jar localhost (name_of_database) (username) (password)
+   java -jar HotelMan-1.1-DEV.jar localhost (schema) (username) (password)
    ```
 
 
