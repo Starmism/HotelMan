@@ -1,14 +1,14 @@
-CREATE SCHEMA PROJ;		-- I created a separate SCHEMA for this stuff.  Feel free to use or not.
+CREATE SCHEMA HOTELS;
 
 CREATE TABLE IF NOT EXISTS STAFF (
     StaffID INT PRIMARY KEY AUTO_INCREMENT,
     FirstName NVARCHAR(50),
     LastName NVARCHAR(50),
-    PhoneNumber NVARCHAR(10),	-- I typically never use CHAR(). At best, it's functionality is equal to VARCHAR() but has drawbacks. I'd go with VARCHAR() and a check constriant.
+    PhoneNumber NCHAR(10),
     Email NVARCHAR(100),
     StartDate DATE,
     EmployeeType NVARCHAR(100),
-    CONSTRAINT cc_phone_number_len CHECK (length(trim(PhoneNumber)) = 10) ENFORCED  -- Only allow 10 character entries.
+    CONSTRAINT cc_phone_number_len CHECK (length(trim(PhoneNumber)) = 10) ENFORCED
 );
 
 INSERT INTO STAFF VALUES (1, 'Reagen', 'Hryskiewicz', '2436043858', 'rhryskiewicz0@techcrunch.com', '2017-04-02', 'Housekeeping'),
@@ -34,23 +34,22 @@ INSERT INTO STAFF VALUES (1, 'Reagen', 'Hryskiewicz', '2436043858', 'rhryskiewic
 
 CREATE TABLE IF NOT EXISTS HOTEL (
     HotelID INT PRIMARY KEY AUTO_INCREMENT,
-    HotelName NVARCHAR(50),	-- HotelName is on the ERD and the RM.  Plus "Name" is a reserved keyword I'd strongly advise against.
+    HotelName NVARCHAR(50),
     Street NVARCHAR(100),
     City NVARCHAR(50),
-    State NVARCHAR(2),	-- I reccomend storing everything in unicode, even when the data clearly will not contain special characters, to prevent conversion issues when feeding other systems.
-    ZipCode NVARCHAR(5),  -- Unicode comment
---    NumberOfRooms INT NOT NULL DEFAULT 0,   -- This is derived and not database stored info
+    State NCHAR(2),
+    ZipCode NCHAR(5),
     HotelManagerID INT,
-    CONSTRAINT cc_zip_len CHECK (length(trim(ZipCode)) = 5) ENFORCED, -- Make sure zips are 5 chars
-    CONSTRAINT cc_state_len CHECK (length(trim(State)) = 2) ENFORCED, -- Make sure states are 2 chars
+    CONSTRAINT cc_zip_len CHECK (length(trim(ZipCode)) = 5) ENFORCED,
+    CONSTRAINT cc_state_len CHECK (length(trim(State)) = 2) ENFORCED,
     CONSTRAINT hotel_manager_fk FOREIGN KEY (HotelManagerID) REFERENCES STAFF(StaffID)
 );
 
-INSERT INTO HOTEL VALUES (1, 'Double Tree', '8756 Helena Court', 'Charleston', 'WV', '25362', 2),	-- Removed the 0s
- (2, 'Four Seasons', '70 Londonderry Point', 'Yakima', 'WA', '98907', 13), -- Removed the 0s
- (3, 'Hyatt', '648 Cardinal Center', 'Milwaukee', 'WI', '53277', 12), -- Removed the 0s
- (4, 'Westin', '29335 Westend Lane', 'Aurora', 'CO', '80045', 12), -- Removed the 0s
- (5, 'Embassy Suites', '988 Sunnyside Drive', 'Port Saint Lucie', 'FL', '34985', 2); -- Removed the 0s
+INSERT INTO HOTEL VALUES (1, 'Double Tree', '8756 Helena Court', 'Charleston', 'WV', '25362', 2),
+ (2, 'Four Seasons', '70 Londonderry Point', 'Yakima', 'WA', '98907', 13),
+ (3, 'Hyatt', '648 Cardinal Center', 'Milwaukee', 'WI', '53277', 12),
+ (4, 'Westin', '29335 Westend Lane', 'Aurora', 'CO', '80045', 12),
+ (5, 'Embassy Suites', '988 Sunnyside Drive', 'Port Saint Lucie', 'FL', '34985', 2);
 
 CREATE TABLE IF NOT EXISTS AMENITY (
     AmenityID INT PRIMARY KEY AUTO_INCREMENT,
@@ -343,13 +342,13 @@ CREATE TABLE IF NOT EXISTS CUSTOMER (
     DateOfBirth DATE,
     Street NVARCHAR(100),
     City NVARCHAR(50),
-    State NVARCHAR(2),	-- Reccomend unicode
-    ZipCode NVARCHAR(5),	-- Reccomend unicode
-    PhoneNumber NVARCHAR(10),	-- Reccomend unicode and VAR
+    State NCHAR(2),
+    ZipCode NCHAR(5),
+    PhoneNumber NCHAR(10),
     Email NVARCHAR(100),
-    CONSTRAINT cc_phone_number_len_2 CHECK (length(trim(PhoneNumber)) = 10) ENFORCED,  -- Only allow 10 character entries.
-	CONSTRAINT cc_zip_len_2 CHECK (length(trim(ZipCode)) = 5) ENFORCED, -- Make sure zips are 5 chars
-    CONSTRAINT cc_state_len_2 CHECK (length(trim(State)) = 2) ENFORCED -- Make sure states are 2 chars
+    CONSTRAINT cc_phone_number_len_2 CHECK (length(trim(PhoneNumber)) = 10) ENFORCED,
+	CONSTRAINT cc_zip_len_2 CHECK (length(trim(ZipCode)) = 5) ENFORCED,
+    CONSTRAINT cc_state_len_2 CHECK (length(trim(State)) = 2) ENFORCED
 );
 
 INSERT INTO CUSTOMER VALUES (1, 'Archy', 'von Nassau', '1984-09-03', '83182 Forest Point', 'Miami', 'FL', '33124', '7866318688', 'avonnassau0@51.la'),
@@ -415,8 +414,6 @@ CREATE TABLE IF NOT EXISTS ROOM_RESERVATION (
     CONSTRAINT roomreservation_reservationid_fk FOREIGN KEY (ReservationID) REFERENCES RESERVATION(ReservationID)
 );
 
-
-
 INSERT INTO ROOM_RESERVATION VALUES (12, 1),
  (15, 1),
  (23, 2),
@@ -454,32 +451,30 @@ INSERT INTO ROOM_RESERVATION VALUES (12, 1),
 
 CREATE TABLE IF NOT EXISTS PAYMENT (
     PaymentID INT PRIMARY KEY AUTO_INCREMENT,
---    ReservationID INT NOT NULL,		-- This was taken out in the ERD and RM, but not here.
     PaymentType NVARCHAR(100),
-    PaymentInfo NVARCHAR(200)  -- No comma on last field
- --   CONSTRAINT payment_reservationid_fk FOREIGN KEY (ReservationID) REFERENCES RESERVATION(ReservationID)  -- This was taken out in the ERD and RM, but not here.
+    PaymentInfo NVARCHAR(200)
 );
 
-INSERT INTO PAYMENT VALUES (1, 'Mastercard', '7617645136768180'),		-- ReservationID taken out
- (2, 'Amex', '5223390377336935'),		-- ReservationID taken out
- (3, 'Amex', '7560467894211843'),		-- ReservationID taken out
- (4, 'Visa', '5900756539277347'),		-- ReservationID taken out
- (5, 'Cash', null),		-- ReservationID taken out
- (6, 'Visa', '2664265117938224'),		-- ReservationID taken out
- (7, 'Visa', '3241809144167831'),		-- ReservationID taken out
- (8, 'Mastercard', '1682205597287630'),		-- ReservationID taken out
- (9, 'Cash', null),		-- ReservationID taken out
- (10, 'Mastercard', '8615541226123430'),		-- ReservationID taken out
- (11, 'Visa', '1817030795550201'),		-- ReservationID taken out
- (12, 'Visa', '4137037892048257'),		-- ReservationID taken out
- (13, 'Cash', null),		-- ReservationID taken out
- (14, 'Mastercard', '7991303837573804'),		-- ReservationID taken out
- (15, 'Visa', '1206950446238705'),		-- ReservationID taken out
- (16, 'Visa', '5310660316487036'),		-- ReservationID taken out
- (17, 'Amex', '1771288738109261'),		-- ReservationID taken out
- (18, 'Visa', '7445710110185707'),		-- ReservationID taken out
- (19, 'Cash', null),		-- ReservationID taken out
- (20, 'Mastercard', '9994248835072802');		-- ReservationID taken out
+INSERT INTO PAYMENT VALUES (1, 'Mastercard', '7617645136768180'),
+ (2, 'Amex', '5223390377336935'),
+ (3, 'Amex', '7560467894211843'),
+ (4, 'Visa', '5900756539277347'),
+ (5, 'Cash', null),
+ (6, 'Visa', '2664265117938224'),
+ (7, 'Visa', '3241809144167831'),
+ (8, 'Mastercard', '1682205597287630'),
+ (9, 'Cash', null),
+ (10, 'Mastercard', '8615541226123430'),
+ (11, 'Visa', '1817030795550201'),
+ (12, 'Visa', '4137037892048257'),
+ (13, 'Cash', null),
+ (14, 'Mastercard', '7991303837573804'),
+ (15, 'Visa', '1206950446238705'),
+ (16, 'Visa', '5310660316487036'),
+ (17, 'Amex', '1771288738109261'),
+ (18, 'Visa', '7445710110185707'),
+ (19, 'Cash', null),
+ (20, 'Mastercard', '9994248835072802');
 
 CREATE TABLE IF NOT EXISTS RESERVATION_PAYMENT (
     ReservationID INT,
