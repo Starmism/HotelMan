@@ -1,11 +1,14 @@
+CREATE SCHEMA HOTELS;
+
 CREATE TABLE IF NOT EXISTS STAFF (
     StaffID INT PRIMARY KEY AUTO_INCREMENT,
     FirstName NVARCHAR(50),
     LastName NVARCHAR(50),
-    PhoneNumber CHAR(10),
+    PhoneNumber NCHAR(10),
     Email NVARCHAR(100),
     StartDate DATE,
-    EmployeeType NVARCHAR(100)
+    EmployeeType NVARCHAR(100),
+    CONSTRAINT cc_phone_number_len CHECK (length(trim(PhoneNumber)) = 10) ENFORCED
 );
 
 INSERT INTO STAFF VALUES (1, 'Reagen', 'Hryskiewicz', '2436043858', 'rhryskiewicz0@techcrunch.com', '2017-04-02', 'Housekeeping'),
@@ -31,21 +34,22 @@ INSERT INTO STAFF VALUES (1, 'Reagen', 'Hryskiewicz', '2436043858', 'rhryskiewic
 
 CREATE TABLE IF NOT EXISTS HOTEL (
     HotelID INT PRIMARY KEY AUTO_INCREMENT,
-    Name NVARCHAR(50),
+    HotelName NVARCHAR(50),
     Street NVARCHAR(100),
     City NVARCHAR(50),
-    State VARCHAR(2),
-    ZipCode VARCHAR(5),
-    NumberOfRooms INT NOT NULL DEFAULT 0,
+    State NCHAR(2),
+    ZipCode NCHAR(5),
     HotelManagerID INT,
+    CONSTRAINT cc_zip_len CHECK (length(trim(ZipCode)) = 5) ENFORCED,
+    CONSTRAINT cc_state_len CHECK (length(trim(State)) = 2) ENFORCED,
     CONSTRAINT hotel_manager_fk FOREIGN KEY (HotelManagerID) REFERENCES STAFF(StaffID)
 );
 
-INSERT INTO HOTEL VALUES (1, 'Double Tree', '8756 Helena Court', 'Charleston', 'WV', '25362', 0, 2),
- (2, 'Four Seasons', '70 Londonderry Point', 'Yakima', 'WA', '98907', 0, 13),
- (3, 'Hyatt', '648 Cardinal Center', 'Milwaukee', 'WI', '53277', 0, 12),
- (4, 'Westin', '29335 Westend Lane', 'Aurora', 'CO', '80045', 0, 12),
- (5, 'Embassy Suites', '988 Sunnyside Drive', 'Port Saint Lucie', 'FL', '34985', 0, 2);
+INSERT INTO HOTEL VALUES (1, 'Double Tree', '8756 Helena Court', 'Charleston', 'WV', '25362', 2),
+ (2, 'Four Seasons', '70 Londonderry Point', 'Yakima', 'WA', '98907', 13),
+ (3, 'Hyatt', '648 Cardinal Center', 'Milwaukee', 'WI', '53277', 12),
+ (4, 'Westin', '29335 Westend Lane', 'Aurora', 'CO', '80045', 12),
+ (5, 'Embassy Suites', '988 Sunnyside Drive', 'Port Saint Lucie', 'FL', '34985', 2);
 
 CREATE TABLE IF NOT EXISTS AMENITY (
     AmenityID INT PRIMARY KEY AUTO_INCREMENT,
@@ -338,10 +342,13 @@ CREATE TABLE IF NOT EXISTS CUSTOMER (
     DateOfBirth DATE,
     Street NVARCHAR(100),
     City NVARCHAR(50),
-    State VARCHAR(2),
-    ZipCode VARCHAR(5),
-    PhoneNumber CHAR(10),
-    Email NVARCHAR(100)
+    State NCHAR(2),
+    ZipCode NCHAR(5),
+    PhoneNumber NCHAR(10),
+    Email NVARCHAR(100),
+    CONSTRAINT cc_phone_number_len_2 CHECK (length(trim(PhoneNumber)) = 10) ENFORCED,
+	CONSTRAINT cc_zip_len_2 CHECK (length(trim(ZipCode)) = 5) ENFORCED,
+    CONSTRAINT cc_state_len_2 CHECK (length(trim(State)) = 2) ENFORCED
 );
 
 INSERT INTO CUSTOMER VALUES (1, 'Archy', 'von Nassau', '1984-09-03', '83182 Forest Point', 'Miami', 'FL', '33124', '7866318688', 'avonnassau0@51.la'),
@@ -407,8 +414,6 @@ CREATE TABLE IF NOT EXISTS ROOM_RESERVATION (
     CONSTRAINT roomreservation_reservationid_fk FOREIGN KEY (ReservationID) REFERENCES RESERVATION(ReservationID)
 );
 
-
-
 INSERT INTO ROOM_RESERVATION VALUES (12, 1),
  (15, 1),
  (23, 2),
@@ -446,31 +451,58 @@ INSERT INTO ROOM_RESERVATION VALUES (12, 1),
 
 CREATE TABLE IF NOT EXISTS PAYMENT (
     PaymentID INT PRIMARY KEY AUTO_INCREMENT,
-    ReservationID INT NOT NULL,
     PaymentType NVARCHAR(100),
-    PaymentInfo NVARCHAR(200),
-    CONSTRAINT payment_reservationid_fk FOREIGN KEY (ReservationID) REFERENCES RESERVATION(ReservationID)
+    PaymentInfo NVARCHAR(200)
 );
 
-INSERT INTO PAYMENT VALUES (1, 6, 'Mastercard', '7617645136768180'),
- (2, 9, 'Amex', '5223390377336935'),
- (3, 12, 'Amex', '7560467894211843'),
- (4, 18, 'Visa', '5900756539277347'),
- (5, 1, 'Cash', null),
- (6, 16, 'Visa', '2664265117938224'),
- (7, 1, 'Visa', '3241809144167831'),
- (8, 2, 'Mastercard', '1682205597287630'),
- (9, 2, 'Cash', null),
- (10, 20, 'Mastercard', '8615541226123430'),
- (11, 11, 'Visa', '1817030795550201'),
- (12, 1, 'Visa', '4137037892048257'),
- (13, 9, 'Cash', null),
- (14, 5, 'Mastercard', '7991303837573804'),
- (15, 1, 'Visa', '1206950446238705'),
- (16, 7, 'Visa', '5310660316487036'),
- (17, 17, 'Amex', '1771288738109261'),
- (18, 14, 'Visa', '7445710110185707'),
- (19, 9, 'Cash', null),
- (20, 2, 'Mastercard', '9994248835072802');
+INSERT INTO PAYMENT VALUES (1, 'Mastercard', '7617645136768180'),
+ (2, 'Amex', '5223390377336935'),
+ (3, 'Amex', '7560467894211843'),
+ (4, 'Visa', '5900756539277347'),
+ (5, 'Cash', null),
+ (6, 'Visa', '2664265117938224'),
+ (7, 'Visa', '3241809144167831'),
+ (8, 'Mastercard', '1682205597287630'),
+ (9, 'Cash', null),
+ (10, 'Mastercard', '8615541226123430'),
+ (11, 'Visa', '1817030795550201'),
+ (12, 'Visa', '4137037892048257'),
+ (13, 'Cash', null),
+ (14, 'Mastercard', '7991303837573804'),
+ (15, 'Visa', '1206950446238705'),
+ (16, 'Visa', '5310660316487036'),
+ (17, 'Amex', '1771288738109261'),
+ (18, 'Visa', '7445710110185707'),
+ (19, 'Cash', null),
+ (20, 'Mastercard', '9994248835072802');
+
+CREATE TABLE IF NOT EXISTS RESERVATION_PAYMENT (
+    ReservationID INT,
+    PaymentID INT,
+    PRIMARY KEY (ReservationID, PaymentID),
+    CONSTRAINT fk_rp_reservation FOREIGN KEY (ReservationID) REFERENCES RESERVATION(ReservationID),
+    CONSTRAINT fk_rp_payment FOREIGN KEY (PaymentID) REFERENCES PAYMENT(PaymentID)
+);
+
+INSERT INTO RESERVATION_PAYMENT VALUES (15, 17),
+(16, 2),
+(6, 5),
+(18, 11),
+(8, 12),
+(20, 4),
+(6, 15),
+(19, 14),
+(20, 19),
+(4, 20),
+(22, 13),
+(19, 7),
+(12, 8),
+(24, 10),
+(7, 1),
+(2, 18),
+(2, 3),
+(18, 9),
+(9, 16),
+(25, 6);
 
 COMMIT;
