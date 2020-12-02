@@ -454,33 +454,60 @@ INSERT INTO ROOM_RESERVATION VALUES (12, 1),
 
 CREATE TABLE IF NOT EXISTS PAYMENT (
     PaymentID INT PRIMARY KEY AUTO_INCREMENT,
-    ReservationID INT NOT NULL,		-- This was taken out in the ERD and RM, but not here.  We need to discuss.
+--    ReservationID INT NOT NULL,		-- This was taken out in the ERD and RM, but not here.
     PaymentType NVARCHAR(100),
-    PaymentInfo NVARCHAR(200),
-    CONSTRAINT payment_reservationid_fk FOREIGN KEY (ReservationID) REFERENCES RESERVATION(ReservationID)  -- This was taken out in the ERD and RM, but not here.  We need to discuss.
+    PaymentInfo NVARCHAR(200)  -- No comma on last field
+ --   CONSTRAINT payment_reservationid_fk FOREIGN KEY (ReservationID) REFERENCES RESERVATION(ReservationID)  -- This was taken out in the ERD and RM, but not here.
 );
 
-INSERT INTO PAYMENT VALUES (1, 6, 'Mastercard', '7617645136768180'),		-- ReservationID taken out in the ERD and RM, but not here.  We need to discuss.
- (2, 9, 'Amex', '5223390377336935'),
- (3, 12, 'Amex', '7560467894211843'),
- (4, 18, 'Visa', '5900756539277347'),
- (5, 1, 'Cash', null),
- (6, 16, 'Visa', '2664265117938224'),
- (7, 1, 'Visa', '3241809144167831'),
- (8, 2, 'Mastercard', '1682205597287630'),
- (9, 2, 'Cash', null),
- (10, 20, 'Mastercard', '8615541226123430'),
- (11, 11, 'Visa', '1817030795550201'),
- (12, 1, 'Visa', '4137037892048257'),
- (13, 9, 'Cash', null),
- (14, 5, 'Mastercard', '7991303837573804'),
- (15, 1, 'Visa', '1206950446238705'),
- (16, 7, 'Visa', '5310660316487036'),
- (17, 17, 'Amex', '1771288738109261'),
- (18, 14, 'Visa', '7445710110185707'),
- (19, 9, 'Cash', null),
- (20, 2, 'Mastercard', '9994248835072802');
+INSERT INTO PAYMENT VALUES (1, 'Mastercard', '7617645136768180'),		-- ReservationID taken out
+ (2, 'Amex', '5223390377336935'),		-- ReservationID taken out
+ (3, 'Amex', '7560467894211843'),		-- ReservationID taken out
+ (4, 'Visa', '5900756539277347'),		-- ReservationID taken out
+ (5, 'Cash', null),		-- ReservationID taken out
+ (6, 'Visa', '2664265117938224'),		-- ReservationID taken out
+ (7, 'Visa', '3241809144167831'),		-- ReservationID taken out
+ (8, 'Mastercard', '1682205597287630'),		-- ReservationID taken out
+ (9, 'Cash', null),		-- ReservationID taken out
+ (10, 'Mastercard', '8615541226123430'),		-- ReservationID taken out
+ (11, 'Visa', '1817030795550201'),		-- ReservationID taken out
+ (12, 'Visa', '4137037892048257'),		-- ReservationID taken out
+ (13, 'Cash', null),		-- ReservationID taken out
+ (14, 'Mastercard', '7991303837573804'),		-- ReservationID taken out
+ (15, 'Visa', '1206950446238705'),		-- ReservationID taken out
+ (16, 'Visa', '5310660316487036'),		-- ReservationID taken out
+ (17, 'Amex', '1771288738109261'),		-- ReservationID taken out
+ (18, 'Visa', '7445710110185707'),		-- ReservationID taken out
+ (19, 'Cash', null),		-- ReservationID taken out
+ (20, 'Mastercard', '9994248835072802');		-- ReservationID taken out
 
--- Potential RESERVATION_PAYMENT table and data.  We need to address this comment: https://docs.google.com/document/d/1F0xs6tqZ-q3HbtkfmdBNStHEKX1gr8TsuALYdAsWQfE/edit?disco=AAAAHXG95PQ
+CREATE TABLE IF NOT EXISTS RESERVATION_PAYMENT (
+    ReservationID INT,
+    PaymentID INT,
+    PRIMARY KEY (ReservationID, PaymentID),
+    CONSTRAINT fk_rp_reservation FOREIGN KEY (ReservationID) REFERENCES RESERVATION(ReservationID),
+    CONSTRAINT fk_rp_payment FOREIGN KEY (PaymentID) REFERENCES PAYMENT(PaymentID)
+);
+
+INSERT INTO RESERVATION_PAYMENT VALUES (15, 17),
+(16, 2),
+(6, 5),
+(18, 11),
+(8, 12),
+(20, 4),
+(6, 15),
+(19, 14),
+(20, 19),
+(4, 20),
+(22, 13),
+(19, 7),
+(12, 8),
+(24, 10),
+(7, 1),
+(2, 18),
+(2, 3),
+(18, 9),
+(9, 16),
+(25, 6);
 
 COMMIT;
