@@ -13,7 +13,7 @@ SELECT *
 
 -- 3. View rooms in a hotel by room types
 SELECT * FROM ROOM
-		WHERE HotelID = 1
+		WHERE HotelID = 5
 			AND RoomType = 'Single-Twin';
 
 -- 4. View rooms in a hotel by reservation status (must include a date) --> Current occupancy status by room in Hotel 1
